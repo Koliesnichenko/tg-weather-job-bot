@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, ConversationHandler, filters, MessageHandler, \
     CallbackQueryHandler, CallbackContext
 from config import BOT_TOKEN
@@ -39,6 +39,12 @@ def main_menu_keyboard():
         [InlineKeyboardButton("📍 Location", callback_data="location")]
     ])
 
+
+async def set_commands(app):
+    await app.bot.set_my_commands([
+        BotCommand("start", "Start the bot"),
+        BotCommand("location", "Share your location"),
+    ])
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -118,6 +124,8 @@ if __name__ == "__main__":
 
     app.add_handler(CommandHandler("location", request_location))
     app.add_handler(MessageHandler(filters.LOCATION, handle_location))
+
+    app.post_init = set_commands()
 
     print("Bot started...")
     app.run_polling()
