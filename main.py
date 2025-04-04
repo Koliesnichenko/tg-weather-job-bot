@@ -1,15 +1,31 @@
-from telegram import Update, InlineKeyboardMarkup
-from telegram import InlineKeyboardButton
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, ConversationHandler, filters, MessageHandler, \
-    CallbackQueryHandler
+    CallbackQueryHandler, CallbackContext
 from config import BOT_TOKEN
 from user_data import set_city, get_city, increment_weather_counter, get_profile
 from weather import get_weather
 from job_parser import get_jobs
 from user_data import delete_profile
+from weather import get_weather_by_coords
 
 
-SET_CITY = 1 # state for ConversationHandler
+SET_CITY = 1# state for ConversationHandler
+
+
+async def request_location(update: Update, context: CallbackContext):
+    location_button = KeyboardButton(text="📍 Share Location", request_location=True)
+    keyboard = ReplyKeyboardMarkup([[location_button]], resize_keyboard=True, one_time_keyboard=True)
+    await update.message.reply_text("Please share your location:", reply_markup=keyboard)
+
+
+async def handle_location(update: Update, context: CallbackContext):
+    if update.message.location:
+        lat = update.message.location.latitude
+        lon = update.message.location.longitude
+        weather_info = get_weather_by_coords(lat, lon)
+        await update.message.reply_text(weather_info)
+    else:
+        await update.message.reply_text("❗ Could not get location")
 
 
 # /start
@@ -20,6 +36,7 @@ def main_menu_keyboard():
         [InlineKeyboardButton("📍 Set City", callback_data="set_city")],
         [InlineKeyboardButton("👤 Profile", callback_data="profile")],
         [InlineKeyboardButton("🗑 Delete Profile", callback_data="delete_profile")],
+        [InlineKeyboardButton("📍 Location", callback_data="location")]
     ])
 
 
@@ -44,6 +61,9 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "jobs":
         jobs = get_jobs()
         await query.edit_message_text(jobs, reply_markup=main_menu_keyboard())
+
+    elif query.data == "location":
+        await query.edit_message_text("To get weather by coordinates enter /location")
 
     elif query.data == "profile":
         profile = get_profile(user.id)
@@ -95,6 +115,9 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_buttons))
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, catch_text))
+
+    app.add_handler(CommandHandler("location", request_location))
+    app.add_handler(MessageHandler(filters.LOCATION, handle_location))
 
     print("Bot started...")
     app.run_polling()
