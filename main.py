@@ -1,0 +1,100 @@
+from telegram import Update, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, ConversationHandler, filters, MessageHandler, \
+    CallbackQueryHandler
+from config import BOT_TOKEN
+from user_data import set_city, get_city, increment_weather_counter, get_profile
+from weather import get_weather
+from job_parser import get_jobs
+from user_data import delete_profile
+
+
+SET_CITY = 1 # state for ConversationHandler
+
+
+# /start
+def main_menu_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🌤 Weather", callback_data="weather")],
+        [InlineKeyboardButton("💼 Jobs", callback_data="jobs")],
+        [InlineKeyboardButton("📍 Set City", callback_data="set_city")],
+        [InlineKeyboardButton("👤 Profile", callback_data="profile")],
+        [InlineKeyboardButton("🗑 Delete Profile", callback_data="delete_profile")],
+    ])
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "👋 Hey! I'm your Dev-Bot. Choose option:",
+        reply_markup=main_menu_keyboard()
+    )
+
+
+async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    user = query.from_user
+
+    if query.data == "weather":
+        city = get_city(user.id) or "Bucharest"
+        weather_info = get_weather(city)
+        increment_weather_counter(user.id)
+        await query.edit_message_text(weather_info, reply_markup=main_menu_keyboard())
+
+    elif query.data == "jobs":
+        jobs = get_jobs()
+        await query.edit_message_text(jobs, reply_markup=main_menu_keyboard())
+
+    elif query.data == "profile":
+        profile = get_profile(user.id)
+        if profile:
+            text = (
+                f"👤 {profile['name']}\n"
+                f"📍 City: {profile.get('city', 'not set')}\n"
+                f"🌤 Weather requests: {profile.get('weather_requests', 0)}"
+            )
+        else:
+            text = "❗ Profile not found. Press 'Set City'"
+        await query.edit_message_text(text, reply_markup=main_menu_keyboard())
+
+    elif query.data == "delete_profile":
+        if delete_profile(user.id):
+            await query.edit_message_text("🗑 Profile deleted.", reply_markup=main_menu_keyboard())
+        else:
+            await query.edit_message_text("❗ Profile not found.", reply_markup=main_menu_keyboard())
+
+    elif query.data == "set_city":
+        context.user_data["set_city"] = True
+        await query.edit_message_text("✍ Input city:")
+        return
+
+
+async def save_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    city = update.message.text
+    user = update.effective_user
+    set_city(user.id, city, user.full_name)
+    await update.message.reply_text(f"✅ City {city} saved!", reply_markup=main_menu_keyboard())
+
+
+async def catch_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.user_data.get("set_city"):
+        city = update.message.text
+        user = update.effective_user
+        set_city(user.id, city, user.full_name)
+        context.user_data["set_city"] = False
+        await update.message.reply_text(f"✅ City {city} saved!", reply_markup=main_menu_keyboard())
+
+
+if __name__ == "__main__":
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    # Commands
+    app.add_handler(CommandHandler("start", start))
+
+    # Inline buttons
+    app.add_handler(CallbackQueryHandler(handle_buttons))
+
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, catch_text))
+
+    print("Bot started...")
+    app.run_polling()
