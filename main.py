@@ -1,6 +1,7 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, ConversationHandler, filters, MessageHandler, \
     CallbackQueryHandler, CallbackContext
+from weather_three_day import get_three_day_weather
 from config import BOT_TOKEN
 from user_data import set_city, get_city, increment_weather_counter, get_profile
 from weather import get_weather
@@ -31,7 +32,8 @@ async def handle_location(update: Update, context: CallbackContext):
 # /start
 def main_menu_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🌤 Weather", callback_data="weather")],
+        [InlineKeyboardButton("🌤 Today", callback_data="weather_today")],
+        [InlineKeyboardButton("📅 3-Day Forecast", callback_data="weather_3days")],
         [InlineKeyboardButton("💼 Jobs", callback_data="jobs")],
         [InlineKeyboardButton("📍 Set City", callback_data="set_city")],
         [InlineKeyboardButton("👤 Profile", callback_data="profile")],
@@ -45,6 +47,7 @@ async def set_commands(app):
         BotCommand("start", "Start the bot"),
         BotCommand("location", "Share your location"),
     ])
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -94,6 +97,17 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("✍ Input city:")
         return
 
+    elif query.data == "weather_today":
+        city = get_city(user.id) or "Bucharest"
+        weather_info = get_weather(city)
+        increment_weather_counter(user.id)
+        await query.edit_message_text(weather_info, reply_markup=main_menu_keyboard())
+
+    elif query.data == "weather_3days":
+        city = get_city(user.id) or "Bucharest"
+        forecast = get_three_day_weather(city)
+        await query.edit_message_text(forecast, reply_markup=main_menu_keyboard())
+
 
 async def save_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
     city = update.message.text
@@ -110,6 +124,10 @@ async def catch_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["set_city"] = False
         await update.message.reply_text(f"✅ City {city} saved!", reply_markup=main_menu_keyboard())
 
+async def post_init(app):
+    await set_commands(app)
+
+
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -125,7 +143,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("location", request_location))
     app.add_handler(MessageHandler(filters.LOCATION, handle_location))
 
-    app.post_init = set_commands()
+    app.post_init = post_init
 
     print("Bot started...")
     app.run_polling()
