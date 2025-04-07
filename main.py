@@ -55,10 +55,16 @@ async def set_commands(app):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 Hey! I'm your Dev-Bot. Choose option:",
-        reply_markup=main_menu_keyboard()
+    text = (
+        "👋 <b>Welcome to Dev-Bot!</b>\n\n"
+        "I'm your assistant for:\n"
+        "📍 <b>Location-based weather</b>\n"
+        "📅 <b>3-day forecast</b>\n"
+        "💼 <b>Python job offers</b> from Djinni\n\n"
+        "Use the buttons below or type a command!\n"
+        "<i>Built by Koliesnichenko_</i>"
     )
+    await update.message.reply_text(text, reply_markup=main_menu_keyboard(), parse_mode="HTML")
 
 
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
