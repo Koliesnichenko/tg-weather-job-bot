@@ -11,9 +11,15 @@ from weather import get_weather
 from job_parser import get_jobs
 from user_data import delete_profile
 from weather import get_weather_by_coords
+from datetime import datetime, timedelta
 
 
 SET_CITY = 1# state for ConversationHandler
+
+djinni_cache = {
+    "data": None,
+    "expires_at": datetime.min
+}
 
 
 async def request_location(update: Update, context: CallbackContext):
@@ -39,11 +45,11 @@ def main_menu_keyboard():
         [InlineKeyboardButton("🌤 Today", callback_data="weather_today")],
         [InlineKeyboardButton("📅 3-Day Forecast", callback_data="weather_3days")],
         [InlineKeyboardButton("💼 Jobs", callback_data="jobs")],
+        [InlineKeyboardButton("💼 Djinni Jobs", callback_data="djinni_jobs")],
         [InlineKeyboardButton("📍 Set City", callback_data="set_city")],
         [InlineKeyboardButton("👤 Profile", callback_data="profile")],
         [InlineKeyboardButton("🗑 Delete Profile", callback_data="delete_profile")],
-        [InlineKeyboardButton("📍 Location", callback_data="location")],
-        [InlineKeyboardButton("🇺🇦 Djinni Jobs", callback_data="djinni_jobs")]
+        [InlineKeyboardButton("📍 Location", callback_data="location")]
     ])
 
 
@@ -120,18 +126,23 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(forecast, reply_markup=main_menu_keyboard())
 
     elif query.data == "djinni_jobs":
-        jobs = get_djinni_jobs_selenium()
-        await query.edit_message_text(jobs, reply_markup=main_menu_keyboard())
 
+        now = datetime.now()
+        if djinni_cache["data"] and now < djinni_cache["expires_at"]:
+            jobs = djinni_cache["data"]
+        else:
+            await query.edit_message_text("🔎 Searching Djinni jobs...")
+            jobs = get_djinni_jobs_selenium()
+            djinni_cache["data"] = jobs
+            djinni_cache["expires_at"] = now + timedelta(minutes=10)
+
+        await query.edit_message_text(jobs, reply_markup=main_menu_keyboard())
 
 async def save_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
     city = update.message.text
     user = update.effective_user
     set_city(user.id, city, user.full_name)
     await update.message.reply_text(f"✅ City {city} saved!", reply_markup=main_menu_keyboard())
-
-
-
 
 
 async def catch_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -141,6 +152,7 @@ async def catch_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         set_city(user.id, city, user.full_name)
         context.user_data["set_city"] = False
         await update.message.reply_text(f"✅ City {city} saved!", reply_markup=main_menu_keyboard())
+
 
 async def post_init(app):
     await set_commands(app)
