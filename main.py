@@ -1,8 +1,11 @@
+import logging
+
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, filters, MessageHandler, \
     CallbackQueryHandler, CallbackContext
 
 from scrapers.djinni_selenium import get_djinni_jobs_selenium
+from telegram.error import TelegramError
 
 from weather_three_day import get_three_day_weather
 from config import BOT_TOKEN
@@ -20,6 +23,12 @@ djinni_cache = {
     "data": None,
     "expires_at": datetime.min
 }
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 async def request_location(update: Update, context: CallbackContext):
@@ -66,7 +75,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "I'm your assistant for:\n"
         "📍 <b>Location-based weather</b>\n"
         "📅 <b>3-day forecast</b>\n"
-        "💼 <b>Python job offers</b> from Djinni\n\n"
+        "💼 <b>Python job offers</b> from:\n"
+        "   └ 🇺🇦 <b>Djinni</b>\n"
+        "   └ 🌍 <b>Python.org</b>\n\n"
         "Use the buttons below or type a command!\n"
         "<i>Built by Koliesnichenko_</i>"
     )
@@ -138,6 +149,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await query.edit_message_text(jobs, reply_markup=main_menu_keyboard())
 
+
 async def save_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
     city = update.message.text
     user = update.effective_user
@@ -158,6 +170,16 @@ async def post_init(app):
     await set_commands(app)
 
 
+async def error_handler(update, context):
+    logging.error(f"‼️ Error: {context.error}")
+    if update and update.effective_message:
+        await update.effective_message.reply_text("🚫 Unexpected error occurred.")
+
+
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("✅ I'm alive!")
+
+
 if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
@@ -172,7 +194,11 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("location", request_location))
     app.add_handler(MessageHandler(filters.LOCATION, handle_location))
 
+    app.add_error_handler(error_handler)
+
+    app.add_handler(CommandHandler("ping", ping))
+
     app.post_init = post_init
 
-    print("Bot started...")
+    logging.info("Bot started...")
     app.run_polling()
