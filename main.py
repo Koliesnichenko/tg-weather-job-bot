@@ -1,6 +1,9 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup, BotCommand
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, ConversationHandler, filters, MessageHandler, \
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, filters, MessageHandler, \
     CallbackQueryHandler, CallbackContext
+
+from scrapers.djinni_selenium import get_djinni_jobs_selenium
+
 from weather_three_day import get_three_day_weather
 from config import BOT_TOKEN
 from user_data import set_city, get_city, increment_weather_counter, get_profile
@@ -32,13 +35,15 @@ async def handle_location(update: Update, context: CallbackContext):
 # /start
 def main_menu_keyboard():
     return InlineKeyboardMarkup([
+
         [InlineKeyboardButton("🌤 Today", callback_data="weather_today")],
         [InlineKeyboardButton("📅 3-Day Forecast", callback_data="weather_3days")],
         [InlineKeyboardButton("💼 Jobs", callback_data="jobs")],
         [InlineKeyboardButton("📍 Set City", callback_data="set_city")],
         [InlineKeyboardButton("👤 Profile", callback_data="profile")],
         [InlineKeyboardButton("🗑 Delete Profile", callback_data="delete_profile")],
-        [InlineKeyboardButton("📍 Location", callback_data="location")]
+        [InlineKeyboardButton("📍 Location", callback_data="location")],
+        [InlineKeyboardButton("🇺🇦 Djinni Jobs", callback_data="djinni_jobs")]
     ])
 
 
@@ -108,12 +113,19 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         forecast = get_three_day_weather(city)
         await query.edit_message_text(forecast, reply_markup=main_menu_keyboard())
 
+    elif query.data == "djinni_jobs":
+        jobs = get_djinni_jobs_selenium()
+        await query.edit_message_text(jobs, reply_markup=main_menu_keyboard())
+
 
 async def save_city(update: Update, context: ContextTypes.DEFAULT_TYPE):
     city = update.message.text
     user = update.effective_user
     set_city(user.id, city, user.full_name)
     await update.message.reply_text(f"✅ City {city} saved!", reply_markup=main_menu_keyboard())
+
+
+
 
 
 async def catch_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -126,7 +138,6 @@ async def catch_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def post_init(app):
     await set_commands(app)
-
 
 
 if __name__ == "__main__":

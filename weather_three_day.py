@@ -23,6 +23,6 @@ def get_three_day_weather(city):
             date_obj = datetime.datetime.strptime(date_txt, "%Y-%m-%d")
             result += f"📆 {date_obj.strftime('%A, %d %b')} — 🌤 {desc.capitalize()}, 🌡 {temp:.1f}°C\n"
 
-        if len(data["list"]) == 3:
+        if len(data["list"]) == 2:
             break
     return result
