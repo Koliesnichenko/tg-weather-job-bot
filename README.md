@@ -1,4 +1,10 @@
-# ☁️ Weather & Job Search Telegram Bot
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-db-blue?logo=postgresql&logoColor=white)
+![Railway](https://img.shields.io/badge/Hosted_on-Railway-purple?logo=railway&logoColor=white)
+![Status](https://img.shields.io/badge/Version-v1.0-green)
+![WIP](https://img.shields.io/badge/WIP-/find%20Command-orange)
+
+# Weather & Job Search Telegram Bot
 
 A multifunctional Telegram bot built with Python that provides:
 
@@ -34,3 +40,39 @@ A multifunctional Telegram bot built with Python that provides:
 
 A placeholder is added for now.
 Version 2 will use Docker-based deployment on Render to restore full /find functionality.
+
+## **Tech Stack**
+  ● **python-telegram-bot**
+  
+  ● **Selenium + BeautifulSoup**
+  
+  ● **PostgreSQL for user profiles**
+  
+  ● **.env for secret management**
+  
+  ● **Hosted: Railway.app**
+  
+## PostgreSQL Structure
+```
+CREATE TABLE users (
+    user_id BIGINT PRIMARY KEY,
+    name TEXT,
+    city TEXT,
+    weather_requests INT DEFAULT 0
+);
+```
+
+## Commands
+  ● Command	Description
+  ● /start	Welcome message and menu
+  ● /location	Share current location
+  ● /find <keywords>	🔍 Custom job search (currently disabled on Railway)
+  ● Inline Buttons	🌤 Today / 📅 3-day / 💼 Jobs / 👤 Profile / 📍 Set City
+  
+
+## Limitations
+  Selenium does not run on Railway due to lack of browser support.
+  
+  /find is disabled on deployed version, but works fine locally.
+  
+  ✅ Docker + Render deployment is planned to re-enable it in v2.
