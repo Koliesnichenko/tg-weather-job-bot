@@ -6,13 +6,11 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, filte
 
 from scrapers.djinni_selenium import get_djinni_jobs_selenium
 from telegram.error import TelegramError
-
+from db import set_city, get_city, increment_weather_counter, get_profile, delete_profile
 from weather_three_day import get_three_day_weather
 from config import BOT_TOKEN
-from user_data import set_city, get_city, increment_weather_counter, get_profile
 from weather import get_weather
 from job_parser import get_jobs
-from user_data import delete_profile
 from weather import get_weather_by_coords
 from datetime import datetime, timedelta
 
