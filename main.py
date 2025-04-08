@@ -64,6 +64,7 @@ async def set_commands(app):
     await app.bot.set_my_commands([
         BotCommand("start", "Start the bot"),
         BotCommand("location", "Share your location"),
+        BotCommand("find", "Search Djinni jobs by keyword")
     ])
 
 
@@ -81,6 +82,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<i>Built by Koliesnichenko_</i>"
     )
     await update.message.reply_text(text, reply_markup=main_menu_keyboard(), parse_mode="HTML")
+
+
+async def find_jobs(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("🔎 Please enter a keyword. Example: /find python")
+        return
+
+    keyword = " ".join(context.args).strip()
+    await update.message.reply_text(f"🔍 Searching for jobs: <b>{keyword}</b>...", parse_mode="HTML")
+
+    jobs = get_djinni_jobs_selenium(keyword)
+    await update.message.reply_text(jobs)
 
 
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -196,6 +209,8 @@ if __name__ == "__main__":
     app.add_error_handler(error_handler)
 
     app.add_handler(CommandHandler("ping", ping))
+
+    app.add_handler(CommandHandler("find", find_jobs))
 
     app.post_init = post_init
 
