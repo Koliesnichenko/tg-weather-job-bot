@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import datetime
 from config import WEATHER_API_KEY
 
+
 def get_three_day_weather(city):
     url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={WEATHER_API_KEY}&units=metric&lang=en"
     response = requests.get(url)

@@ -72,13 +72,14 @@ async def set_commands(app):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "👋 <b>Welcome to Dev-Bot!</b>\n\n"
-        "I'm your assistant for:\n"
-        "📍 <b>Location-based weather</b>\n"
-        "📅 <b>3-day forecast</b>\n"
+        "📍 <i>Set your city via '📍 Set City' to personalize your experience</i>\n"
+        "🌍 Default city is <b>Bucharest</b>\n\n"
+        "I'm here to help with:\n"
+        "🌤 <b>Weather forecast</b>\n"
+        "📅 <b>3-day outlook</b>\n"
         "💼 <b>Python job offers</b> from:\n"
         "   └ 🇺🇦 <b>Djinni</b>\n"
         "   └ 🌍 <b>Python.org</b>\n\n"
-        "Use the buttons below or type a command!\n"
         "<i>Built by Koliesnichenko_</i>"
     )
     await update.message.reply_text(text, reply_markup=main_menu_keyboard(), parse_mode="HTML")
