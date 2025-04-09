@@ -19,4 +19,6 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
+EXPOSE 10000
+
 CMD ["python", "main.py"]
