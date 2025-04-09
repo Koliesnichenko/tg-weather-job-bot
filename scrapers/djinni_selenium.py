@@ -18,7 +18,7 @@ def get_djinni_jobs_selenium(query="python", limit=5):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    CHROMEDRIVER_PATH = os.path.join(os.getcwd(), "chromedriver.exe")
+    CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
     jobs = []
 
     try:
