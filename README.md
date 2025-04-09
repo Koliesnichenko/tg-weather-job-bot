@@ -6,6 +6,8 @@
 
 # Weather & Job Search Telegram Bot
 
+🚀 [Try the bot on Telegram](https://t.me/JobWeather_bot)  
+
 A multifunctional Telegram bot built with Python that provides:
 
 - 🌤 Real-time weather updates
@@ -37,10 +39,9 @@ A multifunctional Telegram bot built with Python that provides:
 - Examples: `/find python`, `/find junior remote`  
 - ⚠️ Works **locally**, disabled **in production** for now
 ```
-⚠️ Currently disabled in production due to Selenium not being supported on Railway.
+⚠️ Currently disabled in production due to Selenium not being supported on Render.
 
-A placeholder is added for now.
-Version 2 will use Docker-based deployment on Render to restore full /find functionality.
+Placeholder in production
 
 ## **Tech Stack**
   ● **python-telegram-bot**
