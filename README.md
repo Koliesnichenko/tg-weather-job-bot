@@ -12,7 +12,7 @@ A multifunctional Telegram bot built with Python that provides:
 - 📅 3-day weather forecasts
 - 💼 Python job scraping from [python.org](https://python.org/jobs) and [Djinni](https://djinni.co)
 - 📍 Location-based forecast via coordinates
-- 🔍 (WIP) Custom job search command: `/find python`, `/find junior remote`
+- 🔍 Custom job search command: `/find python`, `/find junior remote` (currently disabled in production)
 
 ---
 
@@ -28,13 +28,14 @@ A multifunctional Telegram bot built with Python that provides:
 
 ### 💼 Job Fetcher
 - Shows recent **Python/Django/Backend** jobs from:
-  - 🟦 [python.org/jobs](https://python.org/jobs)
-  - 🟨 [Djinni.co](https://djinni.co) — *temporarily limited*
+  - 🟦 [python.org/jobs](https://python.org/jobs) — *works in production*
+  - 🟨 [Djinni.co](https://djinni.co) — *disabled on production (uses Selenium, not supported on Render)*
 
 ### 🔍 `/find <keyword>` (Custom Search)
 ```bash
-/find python
-/find junior remote
+- Lets users search jobs by keyword  
+- Examples: `/find python`, `/find junior remote`  
+- ⚠️ Works **locally**, disabled **in production** for now
 ```
 ⚠️ Currently disabled in production due to Selenium not being supported on Railway.
 
@@ -50,7 +51,9 @@ Version 2 will use Docker-based deployment on Render to restore full /find funct
   
   ● **.env for secret management**
   
-  ● **Hosted: Railway.app**
+  ● **`Docker` — containerized**
+  
+  ● **☁️ Hosted on [Render.com](https://render.com)**
   
 ## PostgreSQL Structure
 ```
@@ -71,8 +74,20 @@ CREATE TABLE users (
   
 
 ## Limitations
-  Selenium does not run on Railway due to lack of browser support.
+  Selenium is not supported on Render
+  Djinni scraping and /find command require Selenium, so they’re disabled in production.
   
-  /find is disabled on deployed version, but works fine locally.
+  ✅ Works perfectly locally with full job search support.
+  🔁 Future versions will migrate from Selenium to requests + BeautifulSoup for full compatibility with cloud hosting.
+
+
+## Deployment Status
+    ● Dockerized
   
-  ✅ Docker + Render deployment is planned to re-enable it in v2.
+    ● Render deployment
+  
+    ● PostgreSQL connected
+  
+    ● Weather + /start + buttons work
+  
+    ● /find to be rewritten without Selenium

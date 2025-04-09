@@ -19,5 +19,4 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["sh", "-c", "python main.py & uvicorn healthcheck:app --host 0.0.0.0 --port 10000"]
-
+CMD ["python", "main.py"]

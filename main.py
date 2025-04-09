@@ -13,6 +13,9 @@ from weather import get_weather
 from job_parser import get_jobs
 from weather import get_weather_by_coords
 from datetime import datetime, timedelta
+import threading
+from healthcheck import app as health_app
+import uvicorn
 
 
 SET_CITY = 1# state for ConversationHandler
@@ -192,7 +195,12 @@ async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ I'm alive!")
 
 
+def run_healthcheck_server():
+    uvicorn.run(health_app, host="0.0.0.0", port=10000)
+
+
 if __name__ == "__main__":
+    threading.Thread(target=run_healthcheck_server).start()
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # Commands
